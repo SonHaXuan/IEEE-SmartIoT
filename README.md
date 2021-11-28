@@ -1,6 +1,8 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-...
+This project is the implementation of the our publication at IEEE-SmartIoT conference 2021. The project aims at designing and developing the app risk estimation mechanism based on the app data collection behaviors and regular behavior. You will find the full implementation in the cralwing app data from CH Play, APK file, reverse engeneering tool, static analysis and the algorithm for distance metric between the app collection behavior and regular behavior. Please read the idea from our paper at https://ieeexplore.ieee.org/abstract/document/9556197/. 
+
+You can re-use our implementation for your research activities. If you have further question about the project, please send the email to sha@uninsubria.it
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Prerequisites
