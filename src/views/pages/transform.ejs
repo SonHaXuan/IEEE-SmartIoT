@@ -1,0 +1,193 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/vendor/animate/animate.css">
+    <link rel="stylesheet" href="/vendor/css-hamburgers/hamburgers.min.css">
+    <link rel="stylesheet" href="/vendor/select2/select2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css">
+    <link rel="stylesheet" href="/css/util.css">
+    <link rel="stylesheet" href="/css/main.css">
+  </head>
+  <body>
+  <div id="wrap-loader">
+    <div class="loader">Loading...</div>
+  </div>
+   <div class="container mt-3">
+      <input type="hidden" id="app-name-inputed" value="<%= appName %>">
+   
+      <div id="info">
+
+      </div>
+      <div id="card-wrap">
+
+      </div>
+
+   </div>
+    
+    <script type="text/javascript" src="/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="/vendor/bootstrap/js/popper.js"></script>
+    <script type="text/javascript" src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/vendor/select2/select2.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script type="text/javascript" src="/vendor/tilt/tilt.jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.3/qs.min.js"></script>
+    <script type="text/javascript" src="/js/main.js"></script>
+    <script type="text/javascript">
+      function startLoad() {
+        $("html, body").css({
+          overflow: "hidden",
+          height: "100%"
+        });
+        $("#wrap-loader").show(0);
+      }
+
+      function endLoad() {
+        $("#wrap-loader").hide(0);
+        $("html, body").css({
+          overflow: "auto",
+          height: "auto"
+        });
+      }
+      $(function() {
+        startLoad()
+        const appName = $("#app-name-inputed").val()
+          
+      $.ajax({
+        url: `/app`,
+        method: "POST",
+        timeout: 1000000,
+        data: { appName },
+        // dataType: "html"
+      }).done(function( response ) {
+        endLoad()
+        const { developer,
+          categoryName,
+          updatedDate,
+          currentVersion,
+          size,
+          installs,
+          privacyLink,
+          appName,
+          description,
+          id,
+          isCompleted,
+          tree
+        } = response.data;
+
+        const infoHTML = `
+          <h1>${appName}</h1>
+          <div class="font-weight-bold"><span>Developer: ${developer}</span><span class="ml-2">Category: ${categoryName}</span></div>
+          <div><a href="${privacyLink}" target="_blank">Privacy Policy</a></div>
+          <p>Description: ${description}</p>
+        `;
+        console.log(infoHTML)
+        $("#info").html(infoHTML);
+
+        let nodesHtml = "";
+        if(!isCompleted) {
+
+          $.ajax({
+            url: `/app/${id}/nodes`,
+            timeout: 1000000,
+            method: "PUT",
+            
+          }).done(function( response ) { 
+
+            const treeNode =  response.data || response;
+
+            console.log(treeNode);
+
+            nodesHtml = buildTreeHtml(treeNode)
+
+            $("#card-wrap").html(nodesHtml);
+          }).fail(function( response ) {
+            console.log(response)
+            alert("Parsing APK fail")
+          })
+        } else {
+          console.log()
+          nodesHtml = buildTreeHtml(tree)
+          $("#card-wrap").html(nodesHtml);
+        }
+
+        
+      })
+
+      function buildTreeHtml(tree) {
+        let infoHTML = "";
+        tree.forEach(function(lv1, indexOfLv1){ 
+            infoHTML += 
+            `
+            <!-- card -->
+            <div class="card mt-2">
+              <div class="card-body">
+                <h3 class="card-title">${indexOfLv1 + 1 + ". " + lv1.name}</h3>
+                <h5 class="card-subtitle mb-2 text-muted">${lv1.children.length + "/" + lv1.totalChildren} (${Math.round(((lv1.children.length / lv1.totalChildren) * 100) * 100) / 100 + "%"})</h5>
+
+                <p class="card-text">
+                  <h5>APIs</h5>
+                  <div class="apis">`;
+                    (lv1.children.forEach(function(lv2){
+                      infoHTML +=`
+                      <div class="api ml-3 mt-2">
+                        <div class="font-weight-bold mb-1">${lv2.name} (${ Math.round(((lv2.children.length / lv2.totalChildren) * 100) * 100) / 100 + "%" })</div>
+                        <!-- <div>
+                          <div class="font-weight-bold">Description:</div>
+                          <div>
+                            ${lv2.desc}
+                          </div>
+                        </div> -->
+                        <div class="classes">
+                          <!-- <h5>Classes</h5> -->
+                          <table class="table table-bordered">
+                            <thead>
+                              <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Class Name</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Functions/Constants</th>
+                              </tr>
+                            </thead>
+                            <tbody> `;
+                              (lv2.children.forEach(function(lv3, indexOfLv3){
+                                infoHTML +=`
+                                <tr>
+                                  <th scope="row">${indexOfLv3 + 1}</th>
+                                  <td>${lv3.name}</td>
+                                  <td>${lv3.desc}</td>
+                                  <td>${lv3.children.length + "/" + lv3.totalChildren} (${ Math.round(((lv3.children.length / lv3.totalChildren) * 100) * 100) / 100 + "%" })</td>
+                                </tr>
+                                ` 
+                              }))
+                              infoHTML +=  `
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      `
+                      
+                    }))
+                    infoHTML +=
+                    `
+                  </div>
+                </p>
+              </div>
+              
+              
+            </div>
+            <!-- end card -->
+            `
+        })
+
+        return infoHTML;
+      }
+      });
+    </script>
+  </body>
+</html>
+

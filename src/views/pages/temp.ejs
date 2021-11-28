@@ -1,0 +1,48 @@
+<div class="card-body">
+  <h3 class="card-title">${indexOfLv1 + 1 + ". " + lv1.name}</h3>
+  <h5 class="card-subtitle mb-2 text-muted">${lv1.children.length + "/" + lv1.totalChildren} (${Math.round(((lv1.children.length / lv1.totalChildren) * 100) * 100) / 100 + "%"})</h5>
+
+  <p class="card-text">
+    <h5>APIs</h5>
+    <div class="apis">`
+      lv1.children.forEach(function(lv2){
+        `
+        <div class="api ml-3 mt-2">
+          <div class="font-weight-bold mb-1">${lv2.name} (${ Math.round(((lv2.children.length / lv2.totalChildren) * 100) * 100) / 100 + "%" })</div>
+          <!-- <div>
+            <div class="font-weight-bold">Description:</div>
+            <div>
+              ${lv2.desc}
+            </div>
+          </div> -->
+          <div class="classes">
+            <!-- <h5>Classes</h5> -->
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Class Name</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody> `
+                lv2.children.forEach(function(lv3, indexOfLv3){
+                  `
+                  <tr>
+                    <th scope="row">${indexOfLv3 + 1}</th>
+                    <td>${lv3.name}</td>
+                    <td>${lv3.desc}</td>
+                  </tr>
+                  ` 
+                })
+                `
+              </tbody>
+            </table>
+          </div>
+        </div>
+        `
+      })
+      `
+    </div>
+  </p>
+</div>
